@@ -82,34 +82,31 @@ Class PlgContentAvatar extends JPlugin
      */
     public function onContentBeforeDisplay($context, &$row, &$params, $limitstart=0)
     {     
-        if (JFactory::getApplication()->isSite())
-        {
-            // Checks the Internet Connectivity by trying to connect to google.com 
-            $fp = @fsockopen(JText::_('PLG_CONTENT_AVATAR_INTERNET_CONNECTIVITY'), JText::_('PLG_CONTENT_AVATAR_PORT'), $errno, $errstr, JText::_('PLG_CONTENT_AVATAR_TIMEOUT'));
-            
-            if ($fp)
-            {
-                $size = $this->params->get('size', $this->defaultsize);
-                $gravatar = $this->params->get('avatar_http', $this->gravatar);
-                $profile = $this->params->get('profile_http', $this->profile);
-                $securegravatar = $this->params->get('avatar_https', $this->securegravatar);
-                $secureprofile = $this->params->get('profile_https', $this->secureprofile);
-                $array = JURI::getInstance()-> getScheme();
-                
-                $http = JHttpFactory::getHttp();
-                $id = $row->created_by;
-                $user = JFactory::getUser($id);
-                $emailid = $user->email;
-                $html = ($array == 'http'? $this->buildHTML($gravatar, $profile, $emailid, $size, $http): $this->buildHTML($securegravatar, $secureprofile, $emailid, $size, $http));
-        
-                return implode('<br /> ', $html);
-            }
-            
-        } 
-        else 
+        if (!JFactory::getApplication()->isSite())
         {
             return;
         }
+            // Checks the Internet Connectivity by trying to connect to google.com 
+            $fp = @fsockopen(JText::_('PLG_CONTENT_AVATAR_INTERNET_CONNECTIVITY'), JText::_('PLG_CONTENT_AVATAR_PORT'), $errno, $errstr, JText::_('PLG_CONTENT_AVATAR_TIMEOUT'));
+            
+        if (!$fp)
+        {
+            return;
+        }
+            $size = $this->params->get('size', $this->defaultsize);
+            $gravatar = $this->params->get('avatar_http', $this->gravatar);
+            $profile = $this->params->get('profile_http', $this->profile);
+            $securegravatar = $this->params->get('avatar_https', $this->securegravatar);
+            $secureprofile = $this->params->get('profile_https', $this->secureprofile);
+            $array = JURI::getInstance()-> getScheme();
+                
+            $http = JHttpFactory::getHttp();
+            $id = $row->created_by;
+            $user = JFactory::getUser($id);
+            $emailid = $user->email;
+            $html = ($array == 'http'? $this->buildHTML($gravatar, $profile, $emailid, $size, $http): $this->buildHTML($securegravatar, $secureprofile, $emailid, $size, $http));
+        
+            return implode('<br /> ', $html);
     } 
     
     /**
