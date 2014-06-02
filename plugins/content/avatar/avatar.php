@@ -84,20 +84,27 @@ Class PlgContentAvatar extends JPlugin
     {     
         if (JFactory::getApplication()->isSite())
         {
-            $array = JURI::getInstance()-> getScheme(); 
-            $http = JHttpFactory::getHttp();
-            $size = $this->params->get('size', $this->defaultsize);
-            $gravatar = $this->params->get('avatar_http', $this->gravatar);
-            $profile = $this->params->get('profile_http', $this->profile);
-            $securegravatar = $this->params->get('avatar_https', $this->securegravatar);
-            $secureprofile = $this->params->get('profile_https', $this->secureprofile);
+            // Checks the Internet Connectivity by trying to connect to google.com 
+            $fp = @fsockopen(JText::_('PLG_CONTENT_AVATAR_INTERNET_CONNECTIVITY'), JText::_('PLG_CONTENT_AVATAR_PORT'), $errno, $errstr, JText::_('PLG_CONTENT_AVATAR_TIMEOUT'));
             
-            $id = $row->created_by;
-            $user = JFactory::getUser($id);
-            $emailid = $user->email;
-            $html = ($array == 'http'? $this->buildHTML($gravatar, $profile, $emailid, $size, $http): $this->buildHTML($securegravatar, $secureprofile, $emailid, $size, $http));
+            if ($fp)
+            {
+                $size = $this->params->get('size', $this->defaultsize);
+                $gravatar = $this->params->get('avatar_http', $this->gravatar);
+                $profile = $this->params->get('profile_http', $this->profile);
+                $securegravatar = $this->params->get('avatar_https', $this->securegravatar);
+                $secureprofile = $this->params->get('profile_https', $this->secureprofile);
+                $array = JURI::getInstance()-> getScheme();
+                
+                $http = JHttpFactory::getHttp();
+                $id = $row->created_by;
+                $user = JFactory::getUser($id);
+                $emailid = $user->email;
+                $html = ($array == 'http'? $this->buildHTML($gravatar, $profile, $emailid, $size, $http): $this->buildHTML($securegravatar, $secureprofile, $emailid, $size, $http));
         
-            return implode('<br /> ', $html);
+                return implode('<br /> ', $html);
+            }
+            
         } 
         else 
         {
@@ -107,6 +114,7 @@ Class PlgContentAvatar extends JPlugin
     
     /**
      * Function which builds the html of avatar and the profile.
+     * 
      * @param string $avatar           URL to get the avatar.
      * @param string $gravatar_profile URL to get the profile information.
      * @param string $email            Email address of the author.
